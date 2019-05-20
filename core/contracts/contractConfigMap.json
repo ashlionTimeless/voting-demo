@@ -1,0 +1,8 @@
+{
+	"eth":{
+		"elections":{
+			"source":"file",
+			"path":"/core/contracts/ethereum/elections"
+		}
+	}
+}

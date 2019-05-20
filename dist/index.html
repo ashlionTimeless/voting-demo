@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Blockchain Elections Demo</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="bundle.js"></script>
+</head>
+<body>
+    <style>
+        .radio-td{
+            width:30px;
+        }
+    </style>
+<div>
+    <div>
+        <input id="privKey" placeholder="Paste your key here">
+        <p style="font-style: italic;">This private key is used to sign the Voting operation and make it identifiable</p>
+    </div>
+    <br>
+    <div>
+        <p>Please choose one of the candidates</p>
+        <button id="getAllCandidates">Reload Candidates List</button>
+        <table id="candidatesTable"></table>
+    </div>
+    <div>
+        <button id="vote">Vote</button>
+        <p id="voteMessage"></p>
+    </div>
+        <button id="getResults">See Results</button>
+        <p style="font-style: italic;">You might need to press the "Recalculate" button to get the latest election results</p>
+        <button id="calculateResults">Recalculate</button>
+        <p id="recalcMessage"></p>
+    <div id="results"></div>
+
+</div>
+<script type="text/javascript">
+        let application = window.application;
+        if(application.isReady()){
+            getAllCandidatesData().then((data)=>{
+                fillTable(data);                
+            });
+        }
+    $("#vote").on("click",async()=>{
+        let privKey = document.getElementById("privKey").value;
+        let inputs = document.getElementsByTagName('input');
+        let choice = false;
+        for(let key in inputs){
+            if(inputs[key].checked==true){
+                choice = inputs[key].value;
+            }
+        }
+        if(choice){
+            if(privKey){
+                try{
+                    let result = await application.vote(choice,privKey);
+                    if(result){
+                        document.getElementById("voteMessage").innerHTML = "You have voted by creating transaction <br>"+result+"<br> You can look up its progress <a href='https://ropsten.etherscan.io/tx/"+result+"'> HERE </a>"
+                    }
+                }catch(e){
+                    alert(e)
+                }
+            }else{
+                alert('No private key entered')
+            }
+        }else{
+            alert("No candidate was chosen");
+        }
+    });
+
+    $("#getAllCandidates").on("click",async()=>{
+        let candidatesData = await getAllCandidatesData();
+        fillTable(candidatesData);
+    })
+    $("#getResults").on("click",async()=>{
+        let candidatesData = await getResults();
+        fillResults(candidatesData);
+    })
+    $("#calculateResults").on("click",async()=>{
+            if(privKey){
+                try{
+                    let result = await application.recalculateWinners(privKey);
+                    if(result){
+                        document.getElementById("recalcMessage").innerHTML = "You have created Result Recalculation Request by creating transaction <br>"+result+"<br> You can look up its progress <a href='https://ropsten.etherscan.io/tx/"+result+"'> HERE </a>"
+                    }
+                }catch(e){
+                    alert(e)
+                }
+            }
+    });
+    function fillTable(candidatesData){
+        var table = document.getElementById("candidatesTable");
+        $('#candidatesTable').find('input').remove().end();
+
+        for(let key in candidatesData){
+            let tr = document.createElement('tr')
+            let td = document.createElement('td');
+            td.setAttribute('class','radio-td');
+
+            var x = document.createElement("INPUT");
+            x.setAttribute("type", "radio");
+            x.setAttribute("value", key);
+            x.setAttribute("name", "candidate");
+            document.body.appendChild(x);
+            td.appendChild(x);
+            tr.appendChild(td);
+            td = document.createElement('td');
+            
+            var p = document.createElement("p");
+            p.innerHTML = candidatesData[key];
+            p.setAttribute('class','label');
+            td.appendChild(p);
+            tr.appendChild(td);
+            table.appendChild(tr)
+        }    
+    }
+        function fillResults(candidatesData){
+        var table = document.getElementById("results");
+        $('#results').find('li').remove().end();
+
+        for(let key in candidatesData){
+            var p = document.createElement("p");
+            p.innerHTML = candidatesData[key].name + " - " +candidatesData[key].votes;
+            table.appendChild(p)
+        }    
+    }
+    function getAllCandidatesData(){
+        return new Promise(async(resolve,reject)=>{
+            try{
+                let allCandidates = await application.getAllCandidates();
+                let allCandidatesData = {};
+                for(let key in allCandidates){
+                    let candidateData = await application.getCandidateData(allCandidates[key]);
+                    allCandidatesData[allCandidates[key]]=candidateData;
+                }
+                return resolve(allCandidatesData);
+            }catch(e){
+                return reject(e);
+            }         
+        })        
+    }
+    function getResults(){
+        return new Promise(async(resolve,reject)=>{
+            try{
+                let allCandidates = await application.getAllCandidates();
+                let allCandidatesData = {};
+                for(let key in allCandidates){
+                    let candidateData = {
+                        name:await application.getCandidateData(allCandidates[key]),
+                        votes:await application.getCandidateVotes(allCandidates[key])
+                    }
+                    allCandidatesData[allCandidates[key]]=candidateData;
+                }
+                return resolve(allCandidatesData);
+            }catch(e){
+                return reject(e);
+            }         
+        })         
+    }
+    function recalculateResults(){
+        return new Promise(async(resolve,reject)=>{
+            try{
+                let allCandidates = await application.getAllCandidates();
+                let allCandidatesData = {};
+                for(let key in allCandidates){
+                    let candidateData = {
+                        name:await application.getCandidateData(allCandidates[key]),
+                        votes:await application.getCandidateVotes(allCandidates[key])
+                    }
+                    allCandidatesData[allCandidates[key]]=candidateData;
+                }
+                return resolve(allCandidatesData);
+            }catch(e){
+                return reject(e);
+            }         
+        })         
+    }
+</script>
+</body>
+</html>
