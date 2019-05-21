@@ -80,6 +80,7 @@
         fillResults(candidatesData);
     })
     $("#calculateResults").on("click",async()=>{
+            let privKey = document.getElementById("privKey").value;
             if(privKey){
                 try{
                     let result = await application.recalculateWinners(privKey);

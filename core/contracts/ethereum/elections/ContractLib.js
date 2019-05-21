@@ -42,7 +42,7 @@ class ElectionsLib{
                         privKey,
                         '0',
                         10,
-                        100000,
+                        300000,
                         this.contract.methods.vote(key).encodeABI()
                         );
             let txHash = await this.eth.makeTransaction(params);
@@ -50,6 +50,7 @@ class ElectionsLib{
         })
     }
     calculateWinners(privKey){
+        console.log(privKey)
         let address = "0x"+EthereumUtil.privateToAddress("0x"+privKey).toString('hex');
         return new Promise(async(resolve,reject)=>{
             let params=this.eth.formatTransactionParams(
@@ -58,7 +59,7 @@ class ElectionsLib{
                         privKey,
                         '0',
                         10,
-                        100000,
+                        300000,
                         this.contract.methods.calculateWinners().encodeABI()
                         );
             let txHash = await this.eth.makeTransaction(params);
@@ -104,24 +105,6 @@ class ElectionsLib{
                 return reject(e)
             }
         });
-    }
-    calculateWinner(){
-        return new Promise(async(resolve,reject)=>{
-            try{
-                let params=this.eth.formatTransactionParams(
-                        this.contract.address,
-                        this.userPrivateKey,
-                        '0',
-                        10,
-                        100000,
-                        this.contract.methods.calculateWinner().encodeABI()
-                        );
-                let txHash = await this.eth.makeTransaction(params);
-                return resolve(txHash); 
-            }catch(e){
-                return reject(e);
-            }
-        })
     }
 }
 
