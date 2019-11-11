@@ -11,9 +11,9 @@ const config = {
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     compress: true,
-    port: 9000,
-    public:"legaldev.pro"
+    port: 9000
   },
+
   watchOptions: {
       aggregateTimeout: 100
   }
